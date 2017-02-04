@@ -14,10 +14,12 @@ public class App {
 		
 //		LOGGER.info("start descripe");
 //		
-//		ApplicationContext context = new ClassPathXmlApplicationContext("spring.xml");
-//		Person person=(Person)context.getBean("person");
-//		
-//		
+		ApplicationContext context = new ClassPathXmlApplicationContext("spring.xml");
+		Person person=(Person)context.getBean("person");
+
+		
+		System.out.println(person.getAge());
+		
 //		XLSBean readXLSX = new XLSBean();
 //
 //		List<Person> list =  readXLSX.readFile("D://Test.xlsx",X);
@@ -28,7 +30,21 @@ public class App {
 //					xLSBean.getName() + "\t" + xLSBean.getAge());
 //		}
 		
+//		System.out.println(rec(0));
+		
 	}
 	
 
+	public static int rec(int num)
+	{
+		if(num==100)
+			return 100;
+		else 
+		{
+			System.out.println(num);
+			num++;
+			return rec(num);
+		}
+		
+	}
 }

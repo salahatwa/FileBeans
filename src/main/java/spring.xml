@@ -2,21 +2,25 @@
 <beans xmlns="http://www.springframework.org/schema/beans"
 	xmlns:aop="http://www.springframework.org/schema/aop" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://www.springframework.org/schema/beans
-	                    http://www.springframework.org/schema/beans/spring-beans.xsd
-                        http://www.springframework.org/schema/aop
-	                    http://www.springframework.org/schema/aop/spring-aop.xsd ">
+	http://www.springframework.org/schema/beans/spring-beans.xsd
+    http://www.springframework.org/schema/aop
+	http://www.springframework.org/schema/aop/spring-aop.xsd ">
 
-	<!-- Enable AspectJ Annotation -->
-	<aop:aspectj-autoproxy></aop:aspectj-autoproxy>
+	<aop:aspectj-autoproxy />
 
-	<bean id="xlsBean" class="com.salahatwa.filesBean.XLSBean">
+
+	<bean id="fileHelper" class="com.salahatwa.filesBean.FileHelper"
+		autowire="byName">
+		<property name="fileUtils" ref="csvBean"></property>
 	</bean>
 
-	<bean id="person" class="com.salahatwa.beans.Person">
-		<property name="age" value="0"></property>
-		<property name="name" value="Salah"></property>
-		<constructor-arg index="0" value="0"></constructor-arg>
-		<constructor-arg index="1" value="1"></constructor-arg>
-	</bean>
+	<bean id="xlsBean" class="com.salahatwa.filesBean.XLSBean"></bean>
+	<bean id="csvBean" class="com.salahatwa.filesBean.CSVBean"></bean>
+	<bean id="txtBean" class="com.salahatwa.filesBean.TxtBean"></bean>
+	
+
+	<bean id="fileAspect" class="com.salahatwa.aspect.FileAspect"></bean>
+	
+	
 
 </beans>

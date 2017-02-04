@@ -4,11 +4,16 @@ import java.util.List;
 
 public interface FileUtils {
 	
+    public static final String XLS="xls";
+	
+	public static final String XLSX="xlsx";
+	
+	
 	/**
 	 * write File
 	 * @return list of objects with duplicate rows
 	 */
-	public <T extends Object> List<?> readFile(String filePath,Class<T> clazz);
+	public <T> List<Object> readFile(String filePath,Class<T> clazz, boolean notDuplicateList) throws Exception;
 	
 	
 	/**
@@ -17,22 +22,7 @@ public interface FileUtils {
 	 * @param notDuplicateList
 	 * @return list of object without duplicate rows
 	 */
-	public <T extends Object> List<?> readFile(String filePath,Class<T> clazz,boolean notDuplicateList);
-	
-	/**
-	 * write File
-	 * @return list of objects with duplicate rows
-	 */
-	public <T extends Object> List<?> writeFile(String filePath,Class<T> clazz);
-	
-	
-	/**
-	 * write File
-	 * @param filePath
-	 * @param notDuplicateList
-	 * @return list of object without duplicate rows
-	 */
-	public <T extends Object> List<?> writeFile(String filePath,Class<T> clazz,boolean notDuplicateList);
+	public <T>  void writeFile(String filePath,List list,boolean notDuplicateList) throws Exception;
 	
 	
 	

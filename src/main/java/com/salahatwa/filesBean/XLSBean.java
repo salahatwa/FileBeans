@@ -1,47 +1,39 @@
 package com.salahatwa.filesBean;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
-import java.util.logging.Level;
-import java.util.stream.Collectors;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.xssf.usermodel.XSSFSheet;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.apache.poi.ss.usermodel.Sheet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import com.salahatwa.mapper.InsializeUnknownObject;
-
-import com.salahatwa.beans.Person;
+import com.salahatwa.mapper.Mapper;
+import com.salahatwa.mapper.TypeMapper;
 
 public class XLSBean implements FileUtils {
 
 	private static Logger LOGGER = LoggerFactory.getLogger(XLSBean.class);
-
-	private List<String> constructorArguments;
-
-	private Class clazz;
+	
+	private FileSourceTemplate fileSourceTemplate=FileSourceTemplate.getInstance();
 
 
-	public <T> List<?> readFile(String filePath, Class<T> clazz) {
-		List resultObjects = null;
+	/**
+	 * read xlsx file in any bean defined by user
+	 */
+	public <T extends Object> List readFile(String filePath, Class<T> clazz, boolean notDuplicateList)
+			throws Exception {
+
+		LOGGER.info("Read XLS File in bean:" + clazz.getName());
+
+		List<Object> inputArguments = new ArrayList<>();
+
+		List<Object> resultObjects = new ArrayList<>();
+
 		try {
-
-			resultObjects = new ArrayList();
-
-			File myFile = new File(filePath);
-			FileInputStream fis = new FileInputStream(myFile);
-			// Finds the workbook instance for XLSX file
-			XSSFWorkbook myWorkBook = new XSSFWorkbook(fis);
-			// Return first sheet from the XLSX workbook
-			XSSFSheet mySheet = myWorkBook.getSheetAt(0);
-			// Get iterator to all the rows in current sheet
-			Iterator<Row> rowIterator = mySheet.iterator();
+		
+			Iterator<Row> rowIterator = fileSourceTemplate.initReadXLSX(filePath);
 			// Traversing over each row of XLSX file
 			while (rowIterator.hasNext()) {
 				Row row = rowIterator.next();
@@ -53,51 +45,83 @@ public class XLSBean implements FileUtils {
 					Cell cell = cellIterator.next();
 					switch (cell.getCellType()) {
 					case Cell.CELL_TYPE_STRING:
-						constructorArguments.add(cell.getStringCellValue());
+						inputArguments.add(cell.getStringCellValue());
 						break;
 					case Cell.CELL_TYPE_NUMERIC:
-						constructorArguments.add(String.valueOf(cell.getNumericCellValue()));
+						inputArguments.add(cell.getNumericCellValue());
 						break;
 					case Cell.CELL_TYPE_BOOLEAN:
-						constructorArguments.add(String.valueOf(cell.getBooleanCellValue()));
+						inputArguments.add(cell.getBooleanCellValue());
 						break;
 					default:
 					}
 				}
-				
-				resultObjects.add(instantiate(constructorArguments));
-				constructorArguments.clear();
+
+				Mapper mapper = new TypeMapper(clazz);
+				Object convertedObject = mapper.mapToObject(inputArguments);
+				resultObjects.add(convertedObject);
+
+				inputArguments.clear();
 			}
 
 		} catch (Exception ex) {
 			LOGGER.error("", ex);
+		} finally {
+			FileSourceTemplate.closeInputStream();
 		}
-		return null;
+		return resultObjects;
 	}
 
+	/**
+	 * Write XLSX File
+	 */
+	public <T> void writeFile(String filePath, List list, boolean notDuplicateList) {
 
+	    Sheet sheet=fileSourceTemplate.initWriteXLS(filePath);
 
+		int rownum = sheet.getLastRowNum();
 
-	public <T> List<?> readFile(String filePath, Class<T> clazz, boolean notDuplicateList) {
-		// TODO Auto-generated method stub
-		return null;
+		Mapper mapper = new TypeMapper();
+
+		try {
+			list = mapper.mapToObjectArray(list);
+
+			for (Object key : list) {
+
+				Object[] objArr = (Object[]) key;
+
+				// Creating a new Row in existing XLSX sheet
+				Row row = sheet.createRow(rownum++);
+
+				int cellnum = 0;
+				for (Object obj : objArr) {
+					Cell cell = row.createCell(cellnum++);
+					if (obj instanceof String) {
+						cell.setCellValue((String) obj);
+					} else if (obj instanceof Boolean) {
+						cell.setCellValue((Boolean) obj);
+					} else if (obj instanceof Date) {
+						cell.setCellValue((Date) obj);
+					} else if (obj instanceof Double) {
+						cell.setCellValue((Double) obj);
+					} else if (obj instanceof Integer) {
+						cell.setCellValue((Integer) obj);
+					}
+				}
+
+			}
+
+			fileSourceTemplate.getWorkBook().write(FileSourceTemplate.writeFileOutPutStream());
+			LOGGER.info("Writing XLSX File Success");
+
+		} catch (Exception e) {
+			LOGGER.info("", e);
+		} finally {
+			FileSourceTemplate.closeOutputStream();
+		}
+
 	}
 
-
-
-
-	public <T> List<?> writeFile(String filePath, Class<T> clazz) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-
-
-
-	public <T> List<?> writeFile(String filePath, Class<T> clazz, boolean notDuplicateList) {
-		// TODO Auto-generated method stub
-		return null;
-	}
 	
-
+	
 }
